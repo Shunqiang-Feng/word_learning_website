@@ -28,7 +28,7 @@ def download_audio(word, chapter, index):
 
 def process_file(file_path):
     chapter = os.path.basename(file_path).split('_')[0]  # Extract chapter from file name
-    df = pd.read_excel(file_path,dtype=str)
+    df = pd.read_excel(file_path,dtype=str, header = None)
     for index, row in df.iterrows():
         word = row[0]
         download_audio(word, chapter, index + 1)
