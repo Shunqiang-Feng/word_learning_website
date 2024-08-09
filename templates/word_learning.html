@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Learn Words - {{ username }}{% endblock %}
+
+{% block content %}
+
+
+<div style="text-align: center; padding: 20px;">
+    <h1>Learn New Words (Chapter {{ chapter }})</h1>
+
+    <div style="margin-bottom: 60px;">
+        <span class="bold-text">Progress:</span>
+        <div style="height: 30px; width: 100%; background-color: #e0e0e0;">
+            <div style="height: 100%; width: {{ progress_data.correct / (progress_data.correct + progress_data.wrong + progress_data.new) * 100 }}%; background-color: #A6E3A1;">Correct</div>
+            <div style="height: 100%; width: {{ progress_data.wrong / (progress_data.correct + progress_data.wrong + progress_data.new) * 100 }}%; background-color: #FCA5A5;">Wrong</div>
+            <div style="height: 100%; width: {{ progress_data.new / (progress_data.correct + progress_data.wrong + progress_data.new) * 100 }}%; background-color: #FCD34D;">New</div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 40px;">
+        <span class="bold-text">Time Left (Recommended):</span>
+        <div id="timer" style="height: 30px; width: 100%; background-color: #e0e0e0;">
+            <div style="height: 100%; width: 100%; background-color: #4C51BF;"></div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <button id="start-btn" style="padding: 10px 20px; margin-right: 10px;">Start</button>
+        <button id="pause-btn" style="padding: 10px 20px;">Pause</button>
+    </div>
+
+    <form id="learning-form" method="POST" action="{{ url_for('learn', username=username) }}">
+        <input type="hidden" name="word_id" value="{{ word.id }}">
+        <div style="margin-bottom: 10px;">
+            <label for="user_input" class="bold-text">Enter the word:</label>
+            <input type="text" id="user_input" name="user_input" style="width: 100%;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Commit</button>
+    </form>
+    </form>
+    <div id="feedback-container"></div>
+</div>
+
+
+<!-- JavaScript代码 -->
+<script>
+    // 自动播放音频
+    let audio = new Audio('{{ url_for('audio', chapter=word.chapter, index=word.index) }}');
+    let timer;
+    let timeLeft = 0.5 * {{ word.word | length }};
+    let isRunning = false; 
+    
+    document.getElementById("start-btn").addEventListener("click", function() {
+        if (!isRunning) {
+            audio.play();
+            isRunning = true;
+            timer = setInterval(function() {
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    isRunning = false;
+                    document.getElementById("timer").firstElementChild.style.width = "0%";
+                } else {
+                    timeLeft -= 0.01;
+                    document.getElementById("timer").firstElementChild.style.width = (timeLeft / (0.5 * {{ word.word | length }})) * 100 + "%";
+                }
+            }, 10);
+        }
+    });
+
+
+    document.getElementById("pause-btn").addEventListener("click", function() {
+        audio.pause();
+        isRunning = false
+        clearInterval(timer);
+        document.getElementById("timer").firstElementChild.style.width = "100%";
+    });
+
+    // 提交表单并处理反馈信息
+    document.getElementById("learning-form").addEventListener("submit", function(event) {
+        event.preventDefault();  // 阻止表单的默认提交
+
+        const form = this;
+
+        // 提交表单数据
+        fetch(form.action, {
+            method: form.method,
+            body: new FormData(form)
+        }).then(response => response.json()).then(data => {
+            // 在页面上显示反馈信息
+            const feedbackContainer = document.getElementById("feedback-container");
+            feedbackContainer.innerHTML = `<div class="alert alert-${data.class}">${data.message}</div>`;
+
+            // 自动刷新页面以加载下一个单词
+            setTimeout(function() {
+                window.location.reload();
+            }, 1000);
+        }).catch(error => console.error('Error:', error));
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("user_input").focus();
+    
+    if (!sessionStorage.getItem("firstVisit")) {
+        // 如果是首次进入，不设置 "firstVisit" 标志，保持默认行为
+        sessionStorage.setItem("firstVisit", "true");
+    } else {
+        // 如果不是首次进入页面，自动播放音频并启动计时器
+        audio.play();  // 自动播放当前单词的音频
+        document.getElementById("start-btn").click();  // 自动启动计时器
+    }
+});
+
+
+
+</script>
+{% endblock %}

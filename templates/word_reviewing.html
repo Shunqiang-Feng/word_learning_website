@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Words</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Review Words (Chapter {{ word.chapter }})</h1>
+        <p>Word: {{ word.word }}</p>
+        <form method="POST" action="{{ url_for('update_status') }}">
+            <input type="hidden" name="word_id" value="{{ word.id }}">
+            <button type="submit" name="status" value="correct" class="btn btn-success">I Know This Word Now</button>
+            <button type="submit" name="status" value="wrong" class="btn btn-danger">I Still Don't Know This Word</button>
+        </form>
+    </div>
+</body>
+</html>
