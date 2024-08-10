@@ -53,6 +53,7 @@ def index():
     return render_template("index.html")
 
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -111,7 +112,13 @@ def register():
     
     return render_template("register.html")
 
+@app.route("/<username>/about")
+def about(username):
+    user = get_logged_in_user(username)
+    if not user:
+        return redirect(url_for("login"))
 
+    return render_template("about.html",username=username)
 
 
 @app.route("/<username>/home")
@@ -283,23 +290,11 @@ def review(username):
 
 
 
-@app.route("/<username>/progress")
-def progress(username):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    user_id = session["user_id"]
-    total_words = Word.query.filter_by(user_id=user_id).count()
-    learned_words = Word.query.filter_by(user_id=user_id, status="correct").count()
-    wrong_words = Word.query.filter_by(user_id=user_id, status="wrong").count()
-
-    return render_template(
-        f"progress.html", total=total_words, learned=learned_words, wrong=wrong_words
-    )
 
 @app.route("/<username>/account", methods=["GET", "POST"])
 def account(username):
-    if "user_id" not in session:
+    user = get_logged_in_user(username)
+    if not user:
         return redirect(url_for("login"))
 
     user_id = session["user_id"]

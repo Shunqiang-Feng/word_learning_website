@@ -39,13 +39,50 @@
             margin-top: 5px;
             align-items: center;
         }
+        
+
+        .container-about {
+            max-width: 800px;
+            
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section img {
+            max-width: 100%;
+            height: auto;
+        }
+        .section-content {
+            display: flex;
+            align-items: center;
+        }
+        .section-content img {
+            margin-right: 20px;
+        }
+        .section-content div {
+            flex: 1;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
         .box {
             border: 1px solid #000;
             padding: 20px;
             width: 45%;
         }
+        .centering{
+            font-size: 2em;
+            color: #333;
+            text-align: center;
+        }
         h2 {
             text-align: center;
+            font-size: 1em;
         }
         .legend {
             display: flex;
@@ -105,6 +142,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('account', username=session.get('username')) }}">{{ session.get('username') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about', username=session.get('username')) }}">About</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('index') }}">Logout</a>
