@@ -2,10 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 500px;
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
         .flashes {
             position: fixed;
             top: 20px;
@@ -18,22 +31,36 @@
             border: 1px solid #f5c6cb;
             display: none; /* Initially hidden */
         }
+        .flash-message {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group input {
+            border-radius: 5px;
+        }
+        .text-center {
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="flashes">
-          {% for category, message in messages %}
-            <span class="flash-message {{ category }}">{{ message }}</span>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+
     
     <div class="container">
-        <h1>Register</h1>
+        <h1 class="text-center">Register</h1>
         <form method="POST">
             <div class="form-group">
                 <label for="username">Username</label>
@@ -43,11 +70,19 @@
                 <label for="password">Password</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Register</button>
+            <button type="submit" class="btn btn-primary btn-block">Register</button>
         </form>
-        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+        <p class="text-center">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
     </div>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flashes">
+            {% for category, message in messages %}
+            <span class="flash-message {{ category }}">{{ message }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {

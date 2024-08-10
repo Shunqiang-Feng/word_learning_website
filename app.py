@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os, secrets
 import pandas as pd
-import time
+import time,re,random
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = secrets.token_hex(16)
@@ -14,6 +14,23 @@ db = SQLAlchemy(app)
 word_dic = {1:'NumberName', 2: 'Office',    3:'Shopping',   4:'Work', 
             5:'Travel',     6:'School',     7:'Society',    8:'Technology',
             9:'Environment',10:'Finance',   11:'Health',    12:'Unclassified'}
+
+def compare_strings(str1, str2):
+    # 使用正则表达式去除所有非字母和数字的字符，并转换为小写
+    clean_str1 = re.sub(r'[^a-zA-Z0-9]', '', str1).lower()
+    clean_str2 = re.sub(r'[^a-zA-Z0-9]', '', str2).lower()
+    
+    # 比较处理后的字符串是否相等
+    return clean_str1 == clean_str2
+
+def get_logged_in_user(username):
+    user_id = session.get("user_id")
+    if not user_id:
+        return None
+    user = db.session.get(User, user_id)
+    if not user or user.username != username:
+        return None
+    return user
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,6 +71,7 @@ def login():
             
     return render_template("login.html")
 
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -61,54 +79,47 @@ def register():
         password = request.form["password"]
         hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
         
-        # check if user_id exists
+        # Check if username already exists
         if User.query.filter_by(username=username).first():
             flash("Username exists. Please Login directly.", 'warning')
             return render_template("register.html")
 
-        # create new user
+        # Create new user
         new_user = User(username=username, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         
-
-        # get user id
         user_id = new_user.id
+        words_to_add = []
 
-        # transverse
+        # Transverse and batch add words
         for chapter in range(1, 13):
             file_path = os.path.join('static', 'word_info', 'xlsx', f'c{chapter}_{word_dic[chapter]}.xlsx')
             if os.path.exists(file_path):
-                # get xlsx file
                 df = pd.read_excel(file_path, header=None)
-                
-
-                # add words to table
                 for index, row in df.iterrows():
-                    word = str(row[0])
-                    
-                    if pd.isna(word) or not word.strip():
-                        continue
-                    new_word = Word(user_id=user_id, chapter=chapter, index=index + 1, word=word)
-                    db.session.add(new_word)
-                    db.session.commit()
-                
-        
+                    word = str(row[0]).strip()
+                    if word:
+                        words_to_add.append(Word(user_id=user_id, chapter=chapter, index=index + 1, word=word))
+
+        # Bulk add words and commit once
+        if words_to_add:
+            db.session.bulk_save_objects(words_to_add)
+            db.session.commit()
+
         return redirect(url_for("login"))
     
     return render_template("register.html")
 
 
 
+
 @app.route("/<username>/home")
 def home(username):
+    user = get_logged_in_user(username)
+    if not user:
+        return redirect(url_for("login"))
     user_id = session.get("user_id")
-    if not user_id:
-        return redirect(url_for("login"))
-
-    user = db.session.get(User, user_id)
-    if not user or user.username != username:
-        return redirect(url_for("login"))
 
     progress_data = []
     for chapter in range(1, 13):
@@ -128,15 +139,12 @@ def home(username):
 
 @app.route("/<username>/learn", methods=["GET", "POST"])
 def learn(username):
-    # Check if user is logged in
-    user_id = session.get("user_id")
-    if not user_id:
-        return redirect(url_for("login"))
 
-    # Retrieve the logged-in user
-    user = db.session.get(User, user_id)
-    if not user or user.username != username:
+    user = get_logged_in_user(username)
+    if not user:
         return redirect(url_for("login"))
+    user_id = session.get("user_id")
+
 
     feedback_message = None
     feedback_class = None
@@ -146,10 +154,10 @@ def learn(username):
         word_id = request.form["word_id"]
         user_input = request.form["user_input"].strip().lower()
         word = Word.query.get(word_id)
-        print(f'it should be  : {word.word}')
+
         if word and word.owner.id == session["user_id"]:
             if user_input:
-                if user_input == word.word.lower():
+                if compare_strings(user_input, word.word):
                     word.status = "correct"
                     feedback_message = f"Correct: {word.word}"
                     feedback_class = "success"  # Green
@@ -171,10 +179,10 @@ def learn(username):
         .order_by(db.func.random())
         .first()
     )
-    print(f'print(new_word) : {new_word.word}')
+ 
 
     if not new_word:
-        return render_template("all_done.html", username=username, chapter=chapter)
+        return render_template("all_done.html", username=username, chapter=chapter, mode = 'learn')
 
     correct_words = Word.query.filter_by(user_id=user_id, chapter=chapter, status="correct").count()
     wrong_words = Word.query.filter_by(user_id=user_id, chapter=chapter, status="wrong").count()
@@ -202,7 +210,7 @@ def audio(chapter, index):
     relative_path = os.path.join("word_info", "audio", "c"+str(chapter), f"{index}.mp3")
     file_path = os.path.join("static", relative_path)
     if os.path.exists(file_path):
-        print('*'*40)
+
         
         return redirect(url_for('static', filename=relative_path.replace('\\', '/')))
     return "", 404
@@ -210,26 +218,69 @@ def audio(chapter, index):
 
 
 
-@app.route("/<username>/review")
+@app.route("/<username>/review", methods=["GET", "POST"])
 def review(username):
-    if "user_id" not in session:
+    # Check if user is logged in
+    user = get_logged_in_user(username)
+    if not user:
         return redirect(url_for("login"))
+    user_id = session.get("user_id")
+    feedback_message = None
+    feedback_class = None
 
-    chapter = request.args.get('chapter', type=int)
-    user_id = session["user_id"]
-    wrong_word = (
+    
+    if request.method == "POST":
+        word_id = request.form["word_id"]
+        user_input = request.form["user_input"].strip().lower()
+        word = Word.query.get(word_id)
+ 
+        if word and word.owner.id == session["user_id"]:
+            if user_input:
+                if compare_strings(user_input, word.word):
+                    word.status = "correct"
+                    feedback_message = f"Correct: {word.word}"
+                    feedback_class = "success"  # Green
+                else:
+                    word.status = "wrong"
+                    feedback_message = f"Wrong: {word.word}"
+                    feedback_class = "danger"  # Red
+            else:
+                feedback_message = f"No Entered: {word.word}"
+                feedback_class = "warning"  # Yellow
+            db.session.commit()
+
+            return jsonify({'message': feedback_message, 'class': feedback_class}), 200
+
+    # If GET request or no POST data, proceed to show the next word
+    chapter = request.args.get('chapter', type=int, default=1)
+    new_word = (
         Word.query.filter_by(user_id=user_id, chapter=chapter, status="wrong")
         .order_by(db.func.random())
         .first()
     )
 
-    if wrong_word:
-        return render_template(
-            f"word_reviewing.html", username=username, word=wrong_word
-        )
-    else:
-        flash("No words to review in this chapter.")
-        return redirect(url_for("home", username=username))
+
+    if not new_word:
+        return render_template("all_done.html", username=username, chapter=chapter, mode = 'review')
+
+    correct_words = Word.query.filter_by(user_id=user_id, chapter=chapter, status="correct").count()
+    wrong_words = Word.query.filter_by(user_id=user_id, chapter=chapter, status="wrong").count()
+    new_words = Word.query.filter_by(user_id=user_id, chapter=chapter, status="new").count()
+
+    progress_data = {
+        "correct": correct_words,
+        "wrong": wrong_words,
+        "new": new_words
+    }
+
+    return render_template(
+        "word_reviewing.html", 
+        username=username, 
+        chapter=chapter, 
+        word=new_word, 
+        progress_data=progress_data
+    )
+
 
 
 @app.route("/<username>/progress")
@@ -245,7 +296,6 @@ def progress(username):
     return render_template(
         f"progress.html", total=total_words, learned=learned_words, wrong=wrong_words
     )
-
 
 @app.route("/<username>/account", methods=["GET", "POST"])
 def account(username):
@@ -265,19 +315,43 @@ def account(username):
                 check_password_hash(user.password, old_password)
                 and new_password == confirm_password
             ):
-                user.password = generate_password_hash(new_password, method="sha256")
+                user.password = generate_password_hash(new_password, method="pbkdf2:sha256")
                 db.session.commit()
                 flash("Password updated successfully")
             else:
                 flash("Password update failed")
 
-        elif "delete_account" in request.form:
-            db.session.delete(user)
+        elif "reset_records" in request.form:
+            reset_chapter = request.form.get("reset_chapter")
+            if reset_chapter == "all":
+                # Reset status for all chapters
+                words = Word.query.filter_by(user_id=user_id).all()
+                for word in words:
+                    word.status = "new"
+            else:
+                # Reset status for a specific chapter
+                words = Word.query.filter_by(user_id=user_id, chapter=int(reset_chapter)).all()
+                for word in words:
+                    word.status = "new"
+    
             db.session.commit()
-            session.pop("user_id", None)
-            return redirect(url_for("index"))
+            flash("Learning records have been reset", category='info')
 
-    return render_template(f"account.html")
+    return render_template("account.html", word_dic=word_dic)
+
+
+
+@app.route('/random-gif', methods=['GET'])
+def random_gif():
+    # GIF 文件夹路径
+    gif_folder = 'static/photo'
+    gifs = [f for f in os.listdir(gif_folder) if f.endswith('.gif')]
+    
+    # 随机选择一个 GIF 文件
+    selected_gif = random.choice(gifs)
+    gif_url = url_for('static', filename=f'photo/{selected_gif}')
+    
+    return jsonify({'gif_url': gif_url})
 
 
 @app.route("/update_status", methods=["POST"])

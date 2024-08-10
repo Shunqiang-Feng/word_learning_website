@@ -10,6 +10,15 @@
         body {
             padding-top: 32px;
         }
+        #random-gif-container {
+        position: relative;
+        margin-top: 50px; /* 上边距 */
+        margin-left: 80px; /* 左边距 */
+        }
+        #random-gif-container img {
+            width: 100px; /* 固定宽度 */
+            height: auto; /* 自动调整高度 */
+        }
         .chart-container {
             width: 150px; 
             height: 150px; 
@@ -28,6 +37,7 @@
             display: flex;
             justify-content: space-around;
             margin-top: 5px;
+            align-items: center;
         }
         .box {
             border: 1px solid #000;
@@ -37,7 +47,6 @@
         h2 {
             text-align: center;
         }
-
         .legend {
             display: flex;
             justify-content: center;
@@ -67,6 +76,16 @@
         }
         .new {
             background-color: #FCD34D;
+        }
+        #random-gif-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+        #random-gif-container img {
+            max-width: 100px; /* Adjust size as needed */
+            max-height: 100px; /* Adjust size as needed */
         }
     </style>
 </head>
@@ -103,6 +122,11 @@
         </div>
     </nav>
 
+    <!-- Random GIF -->
+    <div id="random-gif-container">
+        <img id="random-gif" src="" alt="Random GIF">
+    </div>
+
     <!-- Page Content -->
     <div class="container mt-4">
         {% block content %}
@@ -112,6 +136,16 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('/random-gif')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('random-gif').src = data.gif_url;
+                })
+                .catch(error => console.error('Error fetching random GIF:', error));
+        });
+    </script>
     {% block scripts %}
     {% endblock %}
 </body>

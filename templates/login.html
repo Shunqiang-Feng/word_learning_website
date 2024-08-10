@@ -2,10 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 500px;
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
         .flashes {
             position: fixed;
             top: 20px;
@@ -18,11 +31,27 @@
             border: 1px solid #f5c6cb;
             display: none; /* Initially hidden */
         }
+        .flash-message {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group input {
+            border-radius: 5px;
+        }
     </style>
 </head>
-
 <body>
-
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -35,7 +64,7 @@
     {% endwith %}
     
     <div class="container">
-        <h1>Login</h1>
+        <h1 class="text-center">Login</h1>
         <form method="POST">
             <div class="form-group">
                 <label for="username">Username</label>
@@ -45,9 +74,9 @@
                 <label for="password">Password</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
         </form>
-        <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+        <p class="text-center mt-3">Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
     </div>
 
     <script>
@@ -57,7 +86,7 @@
                 var flashContainer = document.querySelector('.flashes');
                 flashContainer.style.display = 'block'; // Show the flash message container
                 setTimeout(function() {
-                    window.location.href = "{{ url_for('register') }}";
+                    flashContainer.style.display = 'none'; // Hide the flash message container after 2 seconds
                 }, 2000); // 2000 milliseconds = 2 seconds
             }
         });

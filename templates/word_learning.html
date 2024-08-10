@@ -27,13 +27,14 @@
     <div style="margin-bottom: 20px;">
         <button id="start-btn" style="padding: 10px 20px; margin-right: 10px;">Start</button>
         <button id="pause-btn" style="padding: 10px 20px;">Pause</button>
+        <button id="exit-btn" style="padding: 10px 20px;">Exit</button>
     </div>
 
     <form id="learning-form" method="POST" action="{{ url_for('learn', username=username) }}">
         <input type="hidden" name="word_id" value="{{ word.id }}">
         <div style="margin-bottom: 10px;">
             <label for="user_input" class="bold-text">Enter the word:</label>
-            <input type="text" id="user_input" name="user_input" style="width: 100%;">
+            <input type="text" id="user_input" name="user_input" autocomplete="off" style="width: 100%;">
         </div>
         <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Commit</button>
     </form>
@@ -47,8 +48,13 @@
     // 自动播放音频
     let audio = new Audio('{{ url_for('audio', chapter=word.chapter, index=word.index) }}');
     let timer;
-    let timeLeft = 0.5 * {{ word.word | length }};
+    let timeLeft = 0.3 * {{ word.word | length }} + 0.5 ;
     let isRunning = false; 
+
+    document.getElementById('exit-btn').addEventListener('click', function() {
+        window.location.href = "{{ url_for('home', username=session.get('username')) }}";
+    });
+
     
     document.getElementById("start-btn").addEventListener("click", function() {
         if (!isRunning) {
@@ -61,7 +67,7 @@
                     document.getElementById("timer").firstElementChild.style.width = "0%";
                 } else {
                     timeLeft -= 0.01;
-                    document.getElementById("timer").firstElementChild.style.width = (timeLeft / (0.5 * {{ word.word | length }})) * 100 + "%";
+                    document.getElementById("timer").firstElementChild.style.width = (timeLeft / (0.3 * {{ word.word | length }}  + 0.5)) * 100 + "%";
                 }
             }, 10);
         }
