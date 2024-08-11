@@ -1,0 +1,84 @@
+
+
+{% extends "base.html" %}
+
+{% block title %}Home - {{ username }}{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 20px;">
+
+    <div class="container">
+        <!-- Static Legend -->
+        <div style="text-align: center; margin-bottom: 16px;">
+            <div class="chart-legend d-inline-block">
+                {% for color, label in [('correct', 'Correct'), ('wrong', 'Wrong'), ('new', 'New')] %}
+                <div class="legend-item">
+                    <div class="legend-color {{ color }}"></div>
+                    <span>{{ label }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="d-flex flex-wrap justify-content-center">
+            {% for chapter in range(1, 13) %}
+            <div class="chart-container" style="flex: 1 1 150px; margin: 20px;">
+                <div class="chapter-label">C{{ chapter }}: {{ word_dic[chapter] }}</div>
+                <canvas id="chart{{ chapter }}"></canvas>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Action Cards -->
+        <div class="row justify-content-center mt-5">
+            {% for action, url in [('Study Words', 'learn'), ('Review Words', 'review')] %}
+            <div class="card" style="flex: 1 1 300px; margin: 5px;">
+                <div class="card-body text-center">
+                    <h2 class="card-title">{{ action }}</h2>
+                    <form action="{{ url_for(url, username=username) }}" method="GET">
+                        <div class="form-group">
+                            <select class="form-control" name="chapter">
+                                {% for chapter in range(1, 13) %}
+                                <option value="{{ chapter }}">{{ chapter }}: {{ word_dic[chapter] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button class="btn btn-primary btn-block" type="submit">GO!</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const data = {{ progress_data | tojson }};
+    data.forEach((chapterData, index) => {
+        const ctx = document.getElementById('chart' + (index + 1)).getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Correct', 'Wrong', 'New'],
+                datasets: [{
+                    data: [chapterData.correct, chapterData.wrong, chapterData.new],
+                    backgroundColor: ['#A6E3A1', '#FCA5A5', '#FCD34D']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false,
+                        position: 'top',
+                    },
+                },
+            }
+        });
+    });
+</script>
+{% endblock %}

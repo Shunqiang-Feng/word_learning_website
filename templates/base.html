@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}IELTS Vocabulary Practice{% endblock %}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            padding-top: 32px;
+        }
+        #random-gif-container {
+        position: relative;
+        margin-top: 50px; /* 上边距 */
+        margin-left: 80px; /* 左边距 */
+        }
+        #random-gif-container img {
+            width: 100px; /* 固定宽度 */
+            height: auto; /* 自动调整高度 */
+        }
+        .chart-container {
+            width: 150px; 
+            height: 150px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .bold-text {
+            font-weight: bold;
+        }
+        .chapter-label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 5px;
+            align-items: center;
+        }
+        
+
+        .container-about {
+            max-width: 800px;
+            
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section img {
+            max-width: 100%;
+            height: auto;
+        }
+        .section-content {
+            display: flex;
+            align-items: center;
+        }
+        .section-content img {
+            margin-right: 20px;
+        }
+        .section-content div {
+            flex: 1;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        .box {
+            border: 1px solid #000;
+            padding: 20px;
+            width: 45%;
+        }
+        .centering{
+            font-size: 2em;
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+            font-size: 1em;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .chart-legend {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+        .correct {
+            background-color: #A6E3A1;
+        }
+        .wrong {
+            background-color: #FCA5A5;
+        }
+        .new {
+            background-color: #FCD34D;
+        }
+        #random-gif-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+        #random-gif-container img {
+            max-width: 100px; /* Adjust size as needed */
+            max-height: 100px; /* Adjust size as needed */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home', username=session.get('username')) }}">IELTS Vocabulary Practice</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    {% if session.get('user_id') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home', username=session.get('username')) }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('account', username=session.get('username')) }}">{{ session.get('username') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about', username=session.get('username')) }}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Random GIF -->
+    <div id="random-gif-container">
+        <img id="random-gif" src="" alt="Random GIF">
+    </div>
+
+    <!-- Page Content -->
+    <div class="container mt-4">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('/random-gif')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('random-gif').src = data.gif_url;
+                })
+                .catch(error => console.error('Error fetching random GIF:', error));
+        });
+    </script>
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

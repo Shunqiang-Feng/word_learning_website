@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            margin-top: 100px;
+        }
+        h1 {
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+        .intro {
+            margin-bottom: 40px;
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+        .intro span {
+            display: block;
+            font-size: 1rem;
+            color: #343a40;
+        }
+        .btn {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Vocabulary Learning Website</h1>
+        <p class="intro">
+            一个专注于雅思听力真题词汇拼写练习的网站<br>
+            A website dedicated to IELTS listening test vocabulary spelling practice
+        </p>
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login</a>
+        <a href="{{ url_for('register') }}" class="btn btn-secondary btn-lg">Register</a>
+    </div>
+</body>
+</html>
