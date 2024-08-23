@@ -288,6 +288,27 @@ def review(username):
         progress_data=progress_data
     )
 
+def get_wrong_words_for_chapter(username, chapter):
+    # 查询用户
+    user = User.query.filter_by(username=username).first()
+    
+    if user is None:
+        return []
+
+    # 获取指定章节中状态为 "wrong" 的单词
+    wrong_words = Word.query.filter_by(user_id=user.id, chapter=chapter, status='wrong').all()
+    
+    return wrong_words
+
+@app.route('/wrong_words_list/<username>/<int:chapter>')
+def wrong_words_list(username, chapter):
+
+    user = get_logged_in_user(username)
+    if not user:
+        return redirect(url_for("login"))
+    user_id = session.get("user_id")
+    wrong_words = get_wrong_words_for_chapter(username, chapter)  # 假设你有这个函数
+    return render_template('wrong_words_list.html', username=username, chapter=chapter, wrong_words=wrong_words)
 
 
 

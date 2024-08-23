@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Wrong Words - Chapter {{ chapter }}{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 20px;">
+    <h1>Wrong Words in Chapter {{ chapter }}</h1>
+    <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; text-align: left;">
+        <thead>
+            <tr>
+                <th>Word</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for word in wrong_words %}
+            <tr>
+                <td>{{ word.word }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <a href="{{ url_for('review', username=username, chapter=chapter) }}">
+        <button style="padding: 10px 20px; margin-top: 20px;">Back to Review</button>
+    </a>
+</div>
+{% endblock %}
