@@ -6,7 +6,12 @@
 
 
 <div style="text-align: center; padding: 20px;">
-    <h1>Review New Words (Chapter {{ chapter }})</h1>
+    
+    <h1>
+        <a href="{{ url_for('wrong_words_list', username=username, chapter=chapter) }}">
+            <button style="padding: 10px 20px; margin-bottom: 20px;">Click here to view wrong words in Chapter {{ chapter }}</button>
+        </a>
+    </h1>
 
     <div style="margin-bottom: 60px;">
         <span class="bold-text">Progress:</span>
@@ -43,7 +48,6 @@
         <p>
             Notice: Please note that the website ignores case and punctuation when checking answers,
         </p>
-        <br>
         <p>
             but in the actual exam, entering extra symbols will result in an error.
         </p>
