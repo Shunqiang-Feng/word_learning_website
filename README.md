@@ -1,3 +1,5 @@
+Due to server is not furthur supported, this website is shut down now. Visitors may download the "Master" branch and build the website locally. Thanks.
+******
 # IELTSLearn.online
 
 Welcome to [IELTSLearn.online](https://ieltslearn.online), a comprehensive website designed to help you improve your English vocabulary, specifically tailored for the IELTS exam. The platform provides tools to enhance your learning experience with effective word learning and review features.
